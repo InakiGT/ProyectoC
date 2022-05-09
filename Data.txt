@@ -1,4 +1,4 @@
-4
+5
 -----PRODUCTO-1:
 coca-cola-600ml
 bebidas-gasificadas
@@ -14,7 +14,7 @@ Agosto
 pepsi-cola-600ml
 bebidas-gasificadas
 22911095
-59
+210
 10.200000
 13.00000
 ---CADUCIDAD
@@ -25,7 +25,7 @@ Febrero
 donas-bimbo-azucaradas-158gr
 panaderia
 22916739
-59
+70
 16.700000
 20.50000
 ---CADUCIDAD
@@ -36,7 +36,7 @@ Noviembre
 oreo-chocolate-114gr
 panaderia
 22917128
-59
+5
 12.500000
 16.00000
 ---CADUCIDAD
@@ -47,7 +47,7 @@ Septiembre
 life-savers-mora-198gr
 dulceria
 22917625
-59
+100
 49.900000
 54.00000
 ---CADUCIDAD

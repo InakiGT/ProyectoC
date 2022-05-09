@@ -51,15 +51,19 @@ void showAllData(int n, PRODUCTO data[]) {
     }
 }
 
-// Leer Datos de la DB
+// Trabajando con archivos binarios
 void readBinFile() {
 	FILE *file;
 	file = fopen("Data.bin", "r+b");
 
-	fread(&BD.N, sizeof(int), 1, file); 
+	fread(&BD.N, sizeof(int), 1, file);
 	BD.productos = malloc(sizeof(PRODUCTO)*BD.N);
 	fread(BD.productos, sizeof(PRODUCTO), BD.N, file);
 	fclose(file);
+}
+
+void saveBinFile() {
+
 }
 
 // CRUD
@@ -71,6 +75,7 @@ void addProduct(PRODUCTO product) {
     BD.productos[BD.N-1] = product;
 }
 
+// TODO: Mejorar
 void deleteProduct(int id) {
     PRODUCTO *newData;
     newData = malloc(sizeof(PRODUCTO)*BD.N-1);
@@ -82,6 +87,7 @@ void deleteProduct(int id) {
         }
     }
     BD.N--;
+    BD.productos = realloc(BD.productos, BD.N * sizeof(PRODUCTO));
     BD.productos = newData;
 }
 
@@ -103,6 +109,46 @@ void searchProductByName(char name[150]) {
     }
 }
 
+// TODO: 2 functions
+int orderExpiration(const void *a, const void *b) {
+    PRODUCTO *producto1 = (PRODUCTO*)a;
+    PRODUCTO *producto2 = (PRODUCTO*)b;
+
+    int date1 = (producto1->caducidad.anio * 365) + (producto1->caducidad.dia);
+    int date2 = (producto1->caducidad.anio * 365) + (producto1->caducidad.dia);
+    
+    if(date1 < date2) {
+        return 1;
+    } else if(date1 > date2) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+int orderExistence(const void *a, const void *b) {
+    PRODUCTO *producto1 = (PRODUCTO*)a;
+    PRODUCTO *producto2 = (PRODUCTO*)b;
+
+    if(producto1->existencia < producto2->existencia) {
+        return 1;
+    } else if(producto1->existencia > producto2->existencia) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+// TODO: Ordenamiento
+void sortByExpiration() {
+    qsort(BD.productos, BD.N, sizeof(PRODUCTO), *orderExpiration);
+}
+
+void sortByExistence() {
+    qsort(BD.productos, BD.N, sizeof(PRODUCTO), *orderExistence);
+    showAllData(BD.N, BD.productos);
+}
+
 // Crear una instancia de los structs
 PRODUCTO createAProduct(char n[150], char cat[150], int cod, int e, double pc, double pv, FECHA date) {
     PRODUCTO product = { "", "", cod, e, pc, pv, date.dia, "", date.anio };
@@ -118,13 +164,12 @@ FECHA createADate(int day, char month[50], int year) {
     return date;
 }
 
-int main(void) {
+int main() {
     readBinFile();
     FECHA fecha = createADate(20, "Agosto", 2020);
     PRODUCTO producto = createAProduct("Seven-up", "bebidas", 2139013, 10, 10.00, 12.00, fecha);
     addProduct(producto);
-    deleteProduct(22911095);
-    prueba();
+    sortByExistence();
 
     return 0;
 }
