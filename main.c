@@ -19,18 +19,18 @@ typedef struct {
     FECHA caducidad;
 }PRODUCTO;
 
-struct {
+typedef struct {
     PRODUCTO *productos;
     int N;
 }BD;
 
-void prueba() {
-    for (int i = 0; i < BD.N; i++) {
-        printf("%s\n", BD.productos[i].nombre);
-    }
-}
 
 // Funciones auxiliares
+BD BDConstructor() {
+    BD bd;
+    return bd;
+}
+
 void showData(int n, PRODUCTO producto) {
     printf("-----PRODUCTO-%i:\n", n);
     printf("%s\n", producto.nombre );
@@ -52,64 +52,81 @@ void showAllData(int n, PRODUCTO data[]) {
 }
 
 // Trabajando con archivos binarios
-void readBinFile() {
+void readBinFile(BD *bd) {
 	FILE *file;
 	file = fopen("Data.bin", "r+b");
 
-	fread(&BD.N, sizeof(int), 1, file);
-	BD.productos = malloc(sizeof(PRODUCTO)*BD.N);
-	fread(BD.productos, sizeof(PRODUCTO), BD.N, file);
+	fread(&bd->N, sizeof(int), 1, file);
+	bd->productos = malloc(sizeof(PRODUCTO) * bd->N);
+	fread(bd->productos, sizeof(PRODUCTO), bd->N, file);
 	fclose(file);
 }
 
-void saveBinFile() {
+void saveBinFile(BD *bd) {
+    FILE *file;
+	file = fopen("Data.bin", "w+b");
 
+	fwrite(&bd->N, sizeof(int), 1, file);
+	fwrite(bd->productos, sizeof(PRODUCTO), bd->N, file);
+	fclose(file);
 }
 
 // CRUD
-void addProduct(PRODUCTO product) {
-    PRODUCTO *tmp;
-    BD.N++;
-    tmp = realloc(BD.productos, sizeof(PRODUCTO)*BD.N);
-    BD.productos = tmp;
-    BD.productos[BD.N-1] = product;
+void transderData(PRODUCTO *newData, PRODUCTO *oldData) {
+    strcpy(newData->nombre, oldData->nombre);
+    strcpy(newData->categoria, oldData->categoria);
+    newData->codigo = oldData->codigo;
+    newData->existencia = oldData->existencia;
+    newData->precio_compra = oldData->precio_compra;
+    newData->precio_venta = oldData->precio_venta;
+    newData->caducidad.dia = oldData->caducidad.dia;
+    strcpy(newData->caducidad.mes, oldData->caducidad.mes);
+    newData->caducidad.anio = oldData->caducidad.anio;
 }
 
-// TODO: Mejorar
-void deleteProduct(int id) {
+void addProduct(BD *bd, PRODUCTO product) {
+    PRODUCTO *tmp;
+    bd->N++;
+    tmp = realloc(bd->productos, sizeof(PRODUCTO)*bd->N);
+    bd->productos = tmp;
+    bd->productos[bd->N-1] = product;
+}
+
+void deleteProduct(BD *bd, int id) {
     PRODUCTO *newData;
-    newData = malloc(sizeof(PRODUCTO)*BD.N-1);
+    newData = malloc(sizeof(PRODUCTO)*(bd->N-1));
     int aux = 0;
-    for(int i = 0; i < BD.N; i++) {
-        if(id != BD.productos[i].codigo) {
-            newData[aux] = BD.productos[i];
+    for(int i = 0; i < bd->N; i++) {
+        if(id != bd->productos[i].codigo) {
+            transderData(&newData[aux], &bd->productos[i]);
+            // newData[aux] = bd->productos[i];
             aux++;
         }
     }
-    BD.N--;
-    BD.productos = realloc(BD.productos, BD.N * sizeof(PRODUCTO));
-    BD.productos = newData;
+    bd->N--;
+    bd->productos = realloc(bd->productos, bd->N * sizeof(PRODUCTO));
+    bd->productos = newData;
 }
 
-void searchProductById(int id) {
-    for(int i = 0; i < BD.N; i++) {
-        if(id == BD.productos[i].codigo) {
-            showData(i+1, BD.productos[i]);
+void searchProductById(BD *bd, int id) {
+    for(int i = 0; i < bd->N; i++) {
+        if(id == bd->productos[i].codigo) {
+            showData(i+1, bd->productos[i]);
             break;
         }
     }
 }
 
-void searchProductByName(char name[150]) {
-    for(int i = 0; i < BD.N; i++) {
-        if(strcmp(name, BD.productos[i].nombre) == 0) {
-            showData(i+1, BD.productos[i]);
+void searchProductByName(BD *bd, char name[150]) {
+    for(int i = 0; i < bd->N; i++) {
+        if(strcmp(name, bd->productos[i].nombre) == 0) {
+            showData(i+1, bd->productos[i]);
             break;
         }
     }
 }
 
-// TODO: 2 functions
+// Funciones de ordenamiento
 int orderExpiration(const void *a, const void *b) {
     PRODUCTO *producto1 = (PRODUCTO*)a;
     PRODUCTO *producto2 = (PRODUCTO*)b;
@@ -139,14 +156,15 @@ int orderExistence(const void *a, const void *b) {
     }
 }
 
-// TODO: Ordenamiento
-void sortByExpiration() {
-    qsort(BD.productos, BD.N, sizeof(PRODUCTO), *orderExpiration);
+// Ordenamiento
+void sortByExpiration(BD *bd) {
+    qsort(bd->productos, bd->N, sizeof(PRODUCTO), *orderExpiration);
+    showAllData(bd->N, bd->productos);
 }
 
-void sortByExistence() {
-    qsort(BD.productos, BD.N, sizeof(PRODUCTO), *orderExistence);
-    showAllData(BD.N, BD.productos);
+void sortByExistence(BD *bd) {
+    qsort(bd->productos, bd->N, sizeof(PRODUCTO), *orderExistence);
+    showAllData(bd->N, bd->productos);
 }
 
 // Crear una instancia de los structs
@@ -165,11 +183,13 @@ FECHA createADate(int day, char month[50], int year) {
 }
 
 int main() {
-    readBinFile();
+    BD bd = BDConstructor();
+    readBinFile(&bd);
     FECHA fecha = createADate(20, "Agosto", 2020);
     PRODUCTO producto = createAProduct("Seven-up", "bebidas", 2139013, 10, 10.00, 12.00, fecha);
-    addProduct(producto);
-    sortByExistence();
+    addProduct(&bd, producto);
+    deleteProduct(&bd, 2139013);
+    sortByExistence(&bd);
 
     return 0;
 }
