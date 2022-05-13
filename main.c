@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "functions.h"
 
 // Definición de tipos
 typedef struct {
@@ -185,11 +186,12 @@ FECHA createADate(int day, char month[50], int year) {
 int main() {
     BD bd = BDConstructor();
     readBinFile(&bd);
-    FECHA fecha = createADate(20, "Agosto", 2020);
-    PRODUCTO producto = createAProduct("Seven-up", "bebidas", 2139013, 10, 10.00, 12.00, fecha);
-    addProduct(&bd, producto);
-    deleteProduct(&bd, 2139013);
-    sortByExistence(&bd);
+    // FECHA fecha = createADate(20, "Agosto", 2020);
+    // PRODUCTO producto = createAProduct("Seven-up", "bebidas", 2139013, 10, 10.00, 12.00, fecha);
+    // addProduct(&bd, producto);
+    // deleteProduct(&bd, 2139013);
+    // sortByExistence(&bd);
+    menu();
 
     return 0;
 }

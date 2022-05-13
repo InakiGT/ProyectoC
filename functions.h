@@ -2,5 +2,6 @@
 #define _FUNCTIONS_
 
 
+void menu();
 
 #endif
